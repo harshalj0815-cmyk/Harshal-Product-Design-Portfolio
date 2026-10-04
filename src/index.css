@@ -1,0 +1,122 @@
+:root {
+  /* Notion palette (Refero DESIGN.md) — warm paper notebook */
+  --color-canvas: #f6f5f4;
+  --color-paper: #ffffff;
+  --color-mist: #f6f5f4;
+  --color-cloud: #e6f3fe;
+  --color-ink: #111111;
+  --color-charcoal: #111111;
+  --color-body: #615d59;
+  --color-slate: #757575;
+  --color-hairline: rgba(0, 0, 0, 0.08);
+  --color-action: #0075de;
+  --color-link: #0075de;
+  --color-status: #f64932;
+  --color-marigold: #ffb110;
+  --color-sky: #62aef0;
+  --color-midnight: #02093a;
+
+  --font-display: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-runde: "Open Runde", "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  /* Shared CRT / terminal face — readable mono for CodePod + nameplate */
+  --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Mono", "Segoe UI Mono",
+    Menlo, Consolas, monospace;
+  --font-terminal: var(--font-mono);
+
+  --space-8: 8px;
+  --space-16: 16px;
+  --space-24: 24px;
+  --space-32: 32px;
+  --space-40: 40px;
+  --space-48: 48px;
+  --space-80: 80px;
+  --space-90: 90px;
+
+  --radius-media: 12px;
+  --radius-soft: 12px;
+  --radius-pill: 999px;
+  --radius-button: 8px;
+
+  --max: 1080px;
+  --text: var(--color-ink);
+  --bg: var(--color-canvas);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  color: var(--text);
+  /* Large faint square grid — reference notebook sheet */
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background-size: 96px 96px;
+  background-position: center top;
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.47;
+  letter-spacing: -0.02em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button,
+a {
+  font: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes count-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

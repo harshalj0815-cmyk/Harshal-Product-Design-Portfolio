@@ -88,7 +88,7 @@ function ViewsBadge({ count }) {
       title="Local view counter for this browser"
     >
       <div className="views">
-        <span className="views-label">Views</span>
+        <span className="views-label">LT-Views</span>
         <span className="views-count">{formatViews(count)}</span>
       </div>
 
@@ -118,22 +118,27 @@ function ViewsBadge({ count }) {
         <span className="views-cover-stripes" aria-hidden="true" />
         <span className="views-cover-body">
           <svg
-            className="views-cover-x"
+            className="views-cover-mark"
             viewBox="0 0 24 24"
-            width="22"
-            height="22"
+            width="28"
+            height="28"
             aria-hidden="true"
           >
             <path
-              d="M4 4L20 20M20 4L4 20"
-              stroke="currentColor"
-              strokeWidth="3.6"
+              d="M12 2.6L22.4 20.8H1.6L12 2.6Z"
+              fill="currentColor"
+            />
+            <path
+              d="M12 8.2v6.1"
+              stroke="#ebb018"
+              strokeWidth="2.2"
               strokeLinecap="square"
             />
+            <rect x="10.9" y="16.2" width="2.2" height="2.2" fill="#ebb018" />
           </svg>
           <span className="views-cover-copy">
             <span className="views-cover-title">Caution</span>
-            <span className="views-cover-sub">Do not Click</span>
+            <span className="views-cover-sub">Do not click</span>
           </span>
         </span>
         <span className="views-cover-stripes" aria-hidden="true" />
@@ -371,6 +376,7 @@ export default function App() {
         for desktop — open this on a laptop for the full experience.
       </div>
 
+      <div className="paper">
       <header className={`site-nav${scrolled ? " is-scrolled" : ""}`}>
         <a className="brand" href="#top">
           Harshal
@@ -530,8 +536,8 @@ export default function App() {
           </div>
         </section>
 
-        <div className="section-mist" id="ask">
-          <section className="section ask">
+        <div className="ask-wrap" id="ask">
+          <section className="section ask ask-paper">
             <p className="section-kicker">Second opinion</p>
             <h2 className="section-title">Ask an AI about this site</h2>
             <p className="section-lead">
@@ -571,6 +577,7 @@ export default function App() {
           </section>
         </div>
       </main>
+      </div>
 
       <footer className="footer" id="connect">
         <div className="footer-inner">

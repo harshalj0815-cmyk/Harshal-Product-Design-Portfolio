@@ -1199,6 +1199,7 @@ export function CodePod({
 
   return (
     <div
+      className="cp-device"
       style={{
         width: 300,
         position: "relative",
@@ -2338,7 +2339,6 @@ export function CodePod({
               }}
             />
             <button
-              data-device-key="mode"
               onClick={() => {
                 // glitch sequence: a couple of quick flickers, noise builds
                 // to peak intensity (the swap happens hidden inside that
@@ -2516,10 +2516,13 @@ export function CodePod({
             height: 5,
             borderRadius: "50%",
             transform: "translateX(-50%)",
-            background: powered ? accent : "radial-gradient(circle at 35% 30%, #8a9092, #2a2d2e 70%)",
+            background: powered
+              ? accent
+              : "radial-gradient(circle at 35% 30%, #ff6a55 0%, #e01818 55%, #7a0a0a 100%)",
             boxShadow: powered
               ? `0 0 6px 2px ${accent}, 0 0 12px 3px ${accent}99`
-              : "none",
+              : "0 0 5px 1px rgba(255, 40, 30, 0.85), 0 0 10px 2px rgba(220, 20, 20, 0.45)",
+            animation: powered ? "none" : "cp-led-blink 1.1s steps(1) infinite",
             transition: "background 200ms ease, box-shadow 200ms ease",
           }}
         />

@@ -295,7 +295,7 @@ function PointerShape({ asset }) {
   );
 }
 
-function ClickBurst({ x, y }) {
+function ClickBurst({ x, y, color = "#111111" }) {
   const size = 36;
   const cx = size / 2;
   const cy = size / 2;
@@ -338,7 +338,7 @@ function ClickBurst({ x, y }) {
                 y1={y1}
                 x2={x2}
                 y2={y2}
-                stroke="#111111"
+                stroke={color}
                 strokeWidth="2.4"
                 strokeLinecap="round"
               />
@@ -391,6 +391,16 @@ export function CustomCursor() {
         )
       );
 
+    const overDeviceShell = (target) =>
+      Boolean(target?.closest?.(".cp-device, .hero-device, .hero-nameplate"));
+
+    const overButton = (target) =>
+      Boolean(
+        target?.closest?.(
+          "button, [role='button'], .nav-cta, .ask-tile, .views-cover"
+        )
+      );
+
     const onMove = (e) => {
       const onScreen = overDeviceScreen(e.target);
       document.documentElement.classList.toggle("is-over-cp-screen", onScreen);
@@ -409,11 +419,16 @@ export function CustomCursor() {
     };
     const onPointerDown = (e) => {
       if (e.button !== 0) return;
-      // Keep click rays off the device screen
+      // Keep click rays off the lit device screen
       if (overDeviceScreen(e.target)) return;
       const id = ++burstId;
       const { clientX: x, clientY: y } = e;
-      setBursts((prev) => [...prev, { id, x, y }]);
+      // White rays on buttons and the physical device shell (keys, bezel, body)
+      const color =
+        overButton(e.target) || overDeviceShell(e.target)
+          ? "#ffffff"
+          : "#111111";
+      setBursts((prev) => [...prev, { id, x, y, color }]);
       window.setTimeout(() => {
         setBursts((prev) => prev.filter((b) => b.id !== id));
       }, 560);
@@ -445,7 +460,7 @@ export function CustomCursor() {
       </div>
 
       {bursts.map((burst) => (
-        <ClickBurst key={burst.id} x={burst.x} y={burst.y} />
+        <ClickBurst key={burst.id} x={burst.x} y={burst.y} color={burst.color} />
       ))}
     </>
   );

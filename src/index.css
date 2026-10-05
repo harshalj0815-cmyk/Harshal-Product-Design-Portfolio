@@ -15,6 +15,11 @@
   --color-marigold: #ffb110;
   --color-sky: #62aef0;
   --color-midnight: #02093a;
+  /* Cutting-mat desk under the paper sheet */
+  --color-mat: #3d8f6a;
+  --color-mat-line: rgba(255, 255, 255, 0.22);
+  --mat-gap: 14px;
+  --mat-footer: clamp(160px, 22vh, 260px);
 
   --font-display: "Instrument Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-runde: "Open Runde", "Instrument Sans", -apple-system, BlinkMacSystemFont, sans-serif;
@@ -57,13 +62,12 @@ body {
   margin: 0;
   min-width: 320px;
   color: var(--text);
-  /* Large faint square grid — reference notebook sheet */
-  background-color: #ffffff;
+  /* Green cutting mat under the paper sheet */
+  background-color: var(--color-mat);
   background-image:
-    linear-gradient(to right, rgba(0, 0, 0, 0.06) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
-  background-size: 96px 96px;
-  background-position: center top;
+    linear-gradient(to right, var(--color-mat-line) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-mat-line) 1px, transparent 1px);
+  background-size: 32px 32px;
   font-family: var(--font-display);
   font-size: 17px;
   line-height: 1.47;

@@ -2,11 +2,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CodePod } from "./components/CodePod.jsx";
 import { CustomCursor } from "./components/CustomCursor.jsx";
 import { HeroCable, HeroNameplate } from "./components/HeroNameplate.jsx";
+import { ScrollPlane } from "./components/ScrollPlane.jsx";
 import {
   askAiLinks,
   askAiPrompt,
   caseStudies,
-  shippedItems,
+  aiExperiments,
   socials,
 } from "./data/content.js";
 import {
@@ -181,9 +182,9 @@ function openAskAi(url) {
   });
 }
 
-function FeatureStudy({ study, index = 0 }) {
-  const tone = study.status === "live" ? "live" : study.status;
-  const imageLeft = index % 2 === 0;
+function FeatureStudy({ study }) {
+  const isLive = study.status === "live";
+  const tone = isLive ? "live" : study.status;
 
   const stageLabel =
     study.stageLabel ||
@@ -192,6 +193,11 @@ function FeatureStudy({ study, index = 0 }) {
       : study.status === "empty"
         ? "Visual soon"
         : "Preview");
+
+  const openStudy = () => {
+    if (!isLive || !study.href) return;
+    window.open(study.href, "_blank", "noopener,noreferrer");
+  };
 
   const stageInner = study.image ? (
     <img
@@ -207,60 +213,43 @@ function FeatureStudy({ study, index = 0 }) {
     </div>
   );
 
-  const stage =
-    study.status === "live" ? (
-      <a
-        className="feature-stage feature-stage-link"
+  return (
+    <article
+      className={`feature${isLive ? " feature--live" : ""}`}
+      data-cursor-pill={isLive ? "Read Case Study" : undefined}
+      role={isLive ? "link" : undefined}
+      tabIndex={isLive ? 0 : undefined}
+      onClick={isLive ? openStudy : undefined}
+      onKeyDown={
+        isLive
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                openStudy();
+              }
+            }
+          : undefined
+      }
+    >
+      <div
+        className="feature-stage"
         data-tone={tone}
-        href={study.href}
-        target="_blank"
-        rel="noreferrer"
+        aria-hidden={study.image ? undefined : true}
       >
         {stageInner}
-      </a>
-    ) : (
-      <div className="feature-stage" data-tone={tone} aria-hidden="true">
-        {stageInner}
       </div>
-    );
-
-  const copy = (
-    <div className="feature-copy">
-      <span className="pill" data-tone={tone}>
-        {study.tag}
-      </span>
-      <h3 className="feature-title">{study.title}</h3>
-      <p className="feature-body">{study.summary}</p>
-      {study.status === "live" ? (
-        <a
-          className="feature-link"
-          href={study.href}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Read the case study →
-        </a>
-      ) : (
-        <span className="feature-link" style={{ color: "var(--color-slate)" }}>
-          {study.status === "progress" ? "In progress" : "Coming soon"}
+      <div className="feature-copy">
+        <span className="pill" data-tone={tone}>
+          {study.tag}
         </span>
-      )}
-    </div>
-  );
-
-  return (
-    <article className={`feature${imageLeft ? "" : " feature--flip"}`}>
-      {imageLeft ? (
-        <>
-          {stage}
-          {copy}
-        </>
-      ) : (
-        <>
-          {copy}
-          {stage}
-        </>
-      )}
+        <h3 className="feature-title">{study.title}</h3>
+        <p className="feature-body">{study.summary}</p>
+        {!isLive ? (
+          <span className="feature-link" style={{ color: "var(--color-slate)" }}>
+            {study.status === "progress" ? "In progress" : "Coming soon"}
+          </span>
+        ) : null}
+      </div>
     </article>
   );
 }
@@ -270,6 +259,8 @@ const UI_SOUND_KEY = "hpd-portfolio-ui-sound";
 export default function App() {
   const views = useViewCount();
   const [scrolled, setScrolled] = useState(false);
+  const [navHidden, setNavHidden] = useState(false);
+  const lastScrollY = useRef(0);
   const heroInnerRef = useRef(null);
   const deviceRef = useRef(null);
   const nameplateRef = useRef(null);
@@ -303,7 +294,19 @@ export default function App() {
   };
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolled(y > 8);
+
+      if (y < 40) {
+        setNavHidden(false);
+      } else if (y > lastScrollY.current + 6) {
+        setNavHidden(true);
+      } else if (y < lastScrollY.current - 6) {
+        setNavHidden(false);
+      }
+      lastScrollY.current = y;
+    };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
@@ -371,13 +374,19 @@ export default function App() {
   return (
     <div className="site">
       <CustomCursor />
+      <ScrollPlane />
       <div className="desktop-banner" role="status">
         <strong>Best on a larger screen.</strong> The device interactions are built
         for desktop — open this on a laptop for the full experience.
       </div>
 
       <div className="paper">
-      <header className={`site-nav${scrolled ? " is-scrolled" : ""}`}>
+      <header
+        className={`site-nav${scrolled ? " is-scrolled" : ""}${
+          navHidden ? " is-hidden" : ""
+        }`}
+      >
+        <span className="nav-scale" aria-hidden="true" />
         <a className="brand" href="#top">
           Harshal
         </a>
@@ -392,9 +401,18 @@ export default function App() {
               <li>
                 <a
                   className="nav-cta"
-                  href={socials.find((s) => s.id === "email")?.href || "mailto:hello@example.com"}
+                  href={
+                    socials.find((s) => s.id === "email")?.href ||
+                    "https://mail.google.com/mail/?view=cm&fs=1&to=harshalj0815@gmail.com"
+                  }
                 >
-                  Hire
+                  <span className="nav-cta__reel" aria-hidden="true">
+                    <span className="nav-cta__slide nav-cta__slide--1" />
+                    <span className="nav-cta__slide nav-cta__slide--2" />
+                    <span className="nav-cta__slide nav-cta__slide--3" />
+                    <span className="nav-cta__slide nav-cta__slide--4" />
+                  </span>
+                  <span className="nav-cta__label">Hire Me</span>
                 </a>
               </li>
             </ul>
@@ -501,49 +519,53 @@ export default function App() {
 
         <div className="section-mist" id="work">
           <section className="section">
-            <p className="section-kicker">Case studies</p>
             <h2 className="section-title">Selected work</h2>
             <p className="section-lead">Selected product stories.</p>
             <div className="feature-stack">
-              {caseStudies.map((study, index) => (
-                <FeatureStudy key={study.id} study={study} index={index} />
+              {caseStudies.map((study) => (
+                <FeatureStudy key={study.id} study={study} />
               ))}
             </div>
           </section>
         </div>
 
         <section className="section" id="shipped">
-          <p className="section-kicker">Beyond the case study</p>
-          <h2 className="section-title">Shipped & experiments</h2>
+          <h2 className="section-title">AI Experiments</h2>
           <p className="section-lead">
-            Smaller releases and AI explorations — proof that something left the
-            notebook.
+            Prototypes and explorations where the model is part of the product —
+            not just a chat box on the side.
           </p>
-          <div className="shipped-grid">
-            {shippedItems.map((item) => (
-              <article key={item.id} className="ship-item">
-                <p className="ship-kind">
-                  {item.status === "progress"
-                    ? `${item.kind} · In progress`
-                    : item.status === "empty"
-                      ? `${item.kind} · Empty`
-                      : item.kind}
-                </p>
-                <h3 className="ship-title">{item.title}</h3>
-                <p className="ship-note">{item.note}</p>
-              </article>
-            ))}
+          <div className="bento-grid">
+            {aiExperiments.map((item) => {
+              const isLink = item.href && item.href !== "#";
+              const Tag = isLink ? "a" : "div";
+              const linkProps = isLink
+                ? { href: item.href, target: "_blank", rel: "noreferrer" }
+                : { role: "img", "aria-label": item.imageAlt };
+              return (
+                <Tag
+                  key={item.id}
+                  className={`bento-card bento-card--${item.size}`}
+                  {...linkProps}
+                >
+                  {item.image ? (
+                    <img
+                      className="bento-card__media"
+                      src={item.image}
+                      alt={item.imageAlt}
+                    />
+                  ) : (
+                    <span className="bento-card__media bento-card__media--empty" />
+                  )}
+                </Tag>
+              );
+            })}
           </div>
         </section>
 
         <div className="ask-wrap" id="ask">
           <section className="section ask ask-paper">
-            <p className="section-kicker">Second opinion</p>
-            <h2 className="section-title">Ask an AI about this site</h2>
-            <p className="section-lead">
-              Copies a short review prompt, then opens the AI of your choice.
-              Ask what stands out — and what could be sharper.
-            </p>
+            <h2 className="section-title">Ask an AI about this portfolio</h2>
             <div className="ask-row">
               {askAiLinks.map((item) => (
                 <button
@@ -554,6 +576,10 @@ export default function App() {
                   onClick={() => openAskAi(item.url)}
                 >
                   <span className="ask-tile-fill" aria-hidden="true" />
+                  <span
+                    className={`ask-tile-texture ask-tile-texture--${item.id}`}
+                    aria-hidden="true"
+                  />
                   <span
                     className="ask-tile-icon"
                     style={{ background: item.tone }}
@@ -573,7 +599,6 @@ export default function App() {
                 </button>
               ))}
             </div>
-            <p className="ask-hint">Prompt is copied to your clipboard on click.</p>
           </section>
         </div>
       </main>
@@ -590,7 +615,7 @@ export default function App() {
                 <a
                   key={item.id}
                   href={item.href}
-                  target={item.href.startsWith("mailto:") ? undefined : "_blank"}
+                  target="_blank"
                   rel="noreferrer"
                 >
                   {item.label}

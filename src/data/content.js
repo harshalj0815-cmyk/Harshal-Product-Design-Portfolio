@@ -3,7 +3,7 @@ export const caseStudies = [
   {
     id: "cs-1",
     status: "live",
-    tag: "Case study · Matiks",
+    tag: "Concept case study",
     title: "Referral at the moment it matters.",
     summary:
       "Situation-based slide-ups that turn peak play into tracked Matiks invites.",
@@ -22,20 +22,34 @@ export const caseStudies = [
   },
 ];
 
-export const shippedItems = [
-  {
-    id: "ship-1",
-    status: "empty",
-    kind: "Shipped",
-    title: "Products that left the lab",
-    note: "Shipped work will show up here with a short note on the outcome.",
-  },
+export const aiExperiments = [
   {
     id: "ai-1",
-    status: "progress",
-    kind: "AI experiment",
-    title: "Experiments in progress",
-    note: "Prototypes and AI explorations will appear as they become shareable.",
+    size: "wide",
+    href: "#",
+    image: "",
+    imageAlt: "AI experiment thumbnail",
+  },
+  {
+    id: "ai-2",
+    size: "tall",
+    href: "#",
+    image: "",
+    imageAlt: "AI experiment thumbnail",
+  },
+  {
+    id: "ai-3",
+    size: "square",
+    href: "#",
+    image: "",
+    imageAlt: "AI experiment thumbnail",
+  },
+  {
+    id: "ai-4",
+    size: "wide",
+    href: "#",
+    image: "",
+    imageAlt: "AI experiment thumbnail",
   },
 ];
 
@@ -79,7 +93,11 @@ Please make the case for it. Cover:
 Write it as an enthusiastic recommendation grounded in concrete details from the site. Lead with what's working and what makes the work memorable.`;
 
 export const socials = [
-  { id: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/" },
+  { id: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/harshaljadhav15/" },
   { id: "x", label: "X", href: "https://x.com/" },
-  { id: "email", label: "Email", href: "mailto:hello@example.com" },
+  {
+    id: "email",
+    label: "Email",
+    href: "https://mail.google.com/mail/?view=cm&fs=1&to=harshalj0815@gmail.com",
+  },
 ];

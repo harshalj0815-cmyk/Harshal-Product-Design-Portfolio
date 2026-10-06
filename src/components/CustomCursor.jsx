@@ -353,10 +353,12 @@ function ClickBurst({ x, y, color = "#111111" }) {
 export function CustomCursor() {
   const cursorRef = useRef(null);
   const tipRef = useRef({ x: 2, y: 2 });
+  const pillLabelRef = useRef(null);
   const [visible, setVisible] = useState(false);
   const [enabled, setEnabled] = useState(false);
   const [bursts, setBursts] = useState([]);
   const [cursorAsset, setCursorAsset] = useState(null);
+  const [pillLabel, setPillLabel] = useState(null);
 
   useEffect(() => {
     const mq = window.matchMedia("(pointer: fine) and (min-width: 761px)");
@@ -384,6 +386,10 @@ export function CustomCursor() {
 
     document.documentElement.classList.add("custom-cursor-on");
 
+    const pointer = { x: 0, y: 0, hasPoint: false };
+    let loopRaf = 0;
+    let lastVisible = false;
+
     const overDeviceScreen = (target) =>
       Boolean(
         target?.closest?.(
@@ -401,29 +407,105 @@ export function CustomCursor() {
         )
       );
 
-    const onMove = (e) => {
-      const onScreen = overDeviceScreen(e.target);
+    const hitTargetAt = (x, y) => {
+      const stack = document.elementsFromPoint?.(x, y);
+      if (stack?.length) {
+        return (
+          stack.find(
+            (node) =>
+              node instanceof Element &&
+              !node.closest?.(".site-cursor, .site-cursor-burst, .scroll-plane")
+          ) || null
+        );
+      }
+      return document.elementFromPoint(x, y);
+    };
+
+    /** Rect check — works even when scroll moves content under a still pointer. */
+    const pillLabelAtPointer = () => {
+      if (!pointer.hasPoint) return null;
+      const hosts = document.querySelectorAll("[data-cursor-pill]");
+      for (const host of hosts) {
+        const r = host.getBoundingClientRect();
+        if (
+          pointer.x >= r.left &&
+          pointer.x <= r.right &&
+          pointer.y >= r.top &&
+          pointer.y <= r.bottom
+        ) {
+          return host.getAttribute("data-cursor-pill");
+        }
+      }
+      return null;
+    };
+
+    const paintPosition = (nextPill) => {
+      const el = cursorRef.current;
+      if (!el || !pointer.hasPoint) return;
+      if (nextPill) {
+        el.style.transform = `translate3d(${pointer.x}px, ${pointer.y}px, 0)`;
+      } else {
+        const { x: tipX, y: tipY } = tipRef.current;
+        el.style.transform = `translate3d(${pointer.x - tipX}px, ${pointer.y - tipY}px, 0)`;
+      }
+    };
+
+    const syncHoverState = (targetHint) => {
+      if (!pointer.hasPoint) return;
+
+      const target =
+        targetHint instanceof Element
+          ? targetHint
+          : hitTargetAt(pointer.x, pointer.y);
+      const onScreen = overDeviceScreen(target);
       document.documentElement.classList.toggle("is-over-cp-screen", onScreen);
 
-      const el = cursorRef.current;
-      if (el) {
-        const { x: tipX, y: tipY } = tipRef.current;
-        el.style.transform = `translate3d(${e.clientX - tipX}px, ${e.clientY - tipY}px, 0)`;
+      const nextPill = onScreen ? null : pillLabelAtPointer();
+      if (nextPill !== pillLabelRef.current) {
+        pillLabelRef.current = nextPill;
+        setPillLabel(nextPill);
       }
-      // Hide site cursor on the device screen — CodePod's pixel cursor takes over
-      setVisible(!onScreen);
+
+      paintPosition(nextPill);
+
+      const nextVisible = !onScreen;
+      if (nextVisible !== lastVisible) {
+        lastVisible = nextVisible;
+        setVisible(nextVisible);
+      }
     };
+
+    // Always re-check card bounds every frame so scroll-without-move clears the pill.
+    const tick = () => {
+      syncHoverState();
+      loopRaf = requestAnimationFrame(tick);
+    };
+    loopRaf = requestAnimationFrame(tick);
+
+    const onMove = (e) => {
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+      pointer.hasPoint = true;
+      syncHoverState(e.target);
+    };
+
     const onLeave = () => {
       document.documentElement.classList.remove("is-over-cp-screen");
+      pointer.hasPoint = false;
+      pillLabelRef.current = null;
+      lastVisible = false;
+      setPillLabel(null);
       setVisible(false);
     };
+
     const onPointerDown = (e) => {
       if (e.button !== 0) return;
-      // Keep click rays off the lit device screen
       if (overDeviceScreen(e.target)) return;
+      if (pillLabelAtPointer() || e.target?.closest?.("[data-cursor-pill]")) {
+        return;
+      }
       const id = ++burstId;
       const { clientX: x, clientY: y } = e;
-      // White rays on buttons and the physical device shell (keys, bezel, body)
       const color =
         overButton(e.target) || overDeviceShell(e.target)
           ? "#ffffff"
@@ -439,6 +521,7 @@ export function CustomCursor() {
     document.addEventListener("mouseleave", onLeave);
 
     return () => {
+      cancelAnimationFrame(loopRaf);
       document.documentElement.classList.remove("custom-cursor-on");
       document.documentElement.classList.remove("is-over-cp-screen");
       window.removeEventListener("pointermove", onMove);
@@ -449,14 +532,28 @@ export function CustomCursor() {
 
   if (!enabled) return null;
 
+  const showCursor = visible && (pillLabel || cursorAsset);
+
   return (
     <>
       <div
         ref={cursorRef}
-        className={`site-cursor${visible && cursorAsset ? " is-visible" : ""}`}
+        className={`site-cursor${showCursor ? " is-visible" : ""}${pillLabel ? " is-pill" : ""}`}
         aria-hidden="true"
       >
-        {cursorAsset ? <PointerShape asset={cursorAsset} /> : null}
+        {pillLabel ? (
+          <span className="site-cursor-pill">
+            <span className="site-cursor-pill__reel" aria-hidden="true">
+              <span className="nav-cta__slide nav-cta__slide--1" />
+              <span className="nav-cta__slide nav-cta__slide--2" />
+              <span className="nav-cta__slide nav-cta__slide--3" />
+              <span className="nav-cta__slide nav-cta__slide--4" />
+            </span>
+            <span className="site-cursor-pill__label">{pillLabel}</span>
+          </span>
+        ) : cursorAsset ? (
+          <PointerShape asset={cursorAsset} />
+        ) : null}
       </div>
 
       {bursts.map((burst) => (
